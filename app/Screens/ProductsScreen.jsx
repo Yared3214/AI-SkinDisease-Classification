@@ -1,193 +1,150 @@
-import React, { useState, useEffect } from "react";
-import { View, Image, Text, TouchableOpacity, Button, StyleSheet, Alert } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import React from "react";
+import { View, FlatList, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Card, Icon } from "react-native-elements";
 
-const SkinImageUploadScreen = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
+const products = [
+  {
+    id: "1",
+    name: "Hydrating Face Cream",
+    price: "25o birr",
+    description: "A deeply hydrating cream infused with natural extracts.",
+    rating: 4.5,
+    reviews: 120,
+    category: "Moisturizer",
+    image: "https://www.bathandbodyworks.com/dw/image/v2/BBDL_PRD/on/demandware.static/-/Sites-master-catalog/default/dw5adb88f8/hires/028000253.jpg?sh=471",
+  },
+  {
+    id: "2",
+    name: "Vitamin C Serum",
+    price: "300 birr",
+    description: "Brightens skin and reduces dark spots with Vitamin C.",
+    rating: 4.8,
+    reviews: 98,
+    category: "Serum",
+    image: "https://m.media-amazon.com/images/I/51h+qCXUaSL._SL1000_.jpg",
+  },
+  {
+    id: "3",
+    name: "Aloe Vera Gel",
+    price: "200 birr",
+    description: "Soothing aloe vera gel for moisturizing and healing skin.",
+    rating: 4.6,
+    reviews: 150,
+    category: "Natural",
+    image: "https://drorganic.co.uk/shop/images/products/DROALOEGEL_large@2x.jpg?t=5086802349",
+  },
+];
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permission Denied", "We need access to your camera roll to continue.");
-      }
-    })();
-  }, []);
-
-  const pickImage = async (fromCamera) => {
-    let result;
-    if (fromCamera) {
-      result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-      });
-    } else {
-      result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-      });
-    }
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-    }
-  };
-
+const SkinCareProductsScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Upload Affected Skin Image</Text>
+      <FlatList
+        data={products}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("product-detail", { product: item })}
+          >
+            <Card containerStyle={styles.card}>
+              <Image source={{ uri: item.image }} style={styles.image} />
+              <Text style={styles.category}>{item.category}</Text>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.price}>{item.price}</Text>
 
-      <View style={styles.buttonRow}>
-        {/* <Button title="Take a Photo" onPress={() => pickImage(true)} />
-        <Button title="Select from Gallery" onPress={() => pickImage(false)} /> */}
-        <TouchableOpacity style={[styles.photoButton, { backgroundColor: "#4CAF50" }]} onPress={() => pickImage(true)}>
-            <Text style={styles.buttonText}>Take a Photo</Text>
-        </TouchableOpacity>
+              {/* Rating & Reviews */}
+              <View style={styles.ratingContainer}>
+                <Icon name="star" type="font-awesome" color="#FFD700" size={16} />
+                <Text style={styles.rating}>{item.rating} ({item.reviews} reviews)</Text>
+              </View>
 
-        <TouchableOpacity style={[styles.photoButton, { backgroundColor: "#008CBA" }]} onPress={() => pickImage(false)}>
-            <Text style={styles.buttonText}>Select from Gallery</Text>
-        </TouchableOpacity>
-
-      </View>
-
-      {selectedImage && (
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.image} />
-          <TouchableOpacity onPress={() => setSelectedImage(null)}>
-            <Text style={styles.removeText}>Remove</Text>
+              {/* Contact Seller Button */}
+              <TouchableOpacity style={styles.contactButton}>
+                <Text style={styles.contactButtonText}>Contact Seller</Text>
+              </TouchableOpacity>
+            </Card>
           </TouchableOpacity>
-        </View>
-      )}
-
-      <Text style={styles.instructions}>
-        Ensure the image is clear and well-lit, focusing on the affected skin area.
-      </Text>
-
-      {/* Wrapper to push the button to the bottom */}
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.analyzeButton}>
-          <Text style={styles.analyzeText}>Analyze Image</Text>
-        </TouchableOpacity>
-      </View>
+        )}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: 20, 
-    alignItems: "center", 
-    backgroundColor: "#fff" 
-  },
-  header: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
-  buttonRow: { flexDirection: "row", justifyContent: "space-between", width: "100%", marginVertical: 10 },
-  imageContainer: { alignItems: "center", marginVertical: 10 },
-  image: { width: 100, height: 100, borderRadius: 10 },
-  removeText: { color: "red", marginTop: 5 },
-  instructions: { textAlign: "center", marginVertical: 10, color: "#555" },
-
-  bottomContainer: { 
-    flex: 1, 
-    justifyContent: "flex-end", 
-    width: "100%", 
-    paddingBottom: 20 
-  },
-  analyzeButton: { 
-    backgroundColor: "#4CAF50", 
-    padding: 15, 
-    borderRadius: 5, 
-    width: "80%", 
-    alignItems: "center", 
-    alignSelf: "center" 
-  },
-  analyzeText: { color: "#fff", fontWeight: "bold" },
-  photoButton: {
-    padding: 12,
-    borderRadius: 5,
-    alignItems: "center",
-    width: "40%",
-  },
-  
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  
+  container: { flex: 1, backgroundColor: "#f8f8f8", padding: 10 },
+  card: { borderRadius: 10, padding: 15, alignItems: "center", elevation: 3 },
+  image: { width: 120, height: 120, borderRadius: 10 },
+  category: { fontSize: 12, color: "#007bff", marginTop: 5 },
+  name: { fontSize: 16, fontWeight: "bold", marginVertical: 5, textAlign: "center" },
+  price: { fontSize: 14, color: "#555", marginBottom: 5 },
+  ratingContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  rating: { fontSize: 14, marginLeft: 5, color: "#444" },
+  contactButton: { backgroundColor: "#6BA292", paddingVertical: 8, paddingHorizontal: 15, borderRadius: 8 },
+  contactButtonText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
 });
 
-export default SkinImageUploadScreen;
+export default SkinCareProductsScreen;
 
 
-// import React, { useState } from "react";
-// import { View, Image, Text, TouchableOpacity, Button, StyleSheet } from "react-native";
-// import * as ImagePicker from "expo-image-picker";
+// import React from "react";
+// import { View, FlatList, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
+// import { Card } from "react-native-elements";
+// import { useNavigation } from '@react-navigation/native'
 
-// const SkinImageUploadScreen = () => {
-//   const [selectedImage, setSelectedImage] = useState(null);
 
-//   const pickImage = async (fromCamera) => {
-//     let result;
-//     if (fromCamera) {
-//       result = await ImagePicker.launchCameraAsync({
-//         allowsEditing: true,
-//         aspect: [1, 1],
-//         quality: 1,
-//       });
-//     } else {
-//       result = await ImagePicker.launchImageLibraryAsync({
-//         allowsEditing: true,
-//         aspect: [1, 1],
-//         quality: 1,
-//       });
-//     }
+// const products = [
+//   {
+//     id: "1",
+//     name: "Hydrating Face Cream",
+//     price: "250 birr",
+//     description: "A deeply hydrating cream infused with natural extracts.",
+//     image: "https://www.bathandbodyworks.com/dw/image/v2/BBDL_PRD/on/demandware.static/-/Sites-master-catalog/default/dw5adb88f8/hires/028000253.jpg?sh=471",
+//   },
+//   {
+//     id: "2",
+//     name: "Vitamin C Serum",
+//     price: "300 birr",
+//     description: "Brightens skin and reduces dark spots with Vitamin C.",
+//     image: "https://m.media-amazon.com/images/I/51h+qCXUaSL._SL1000_.jpg",
+//   },
+//   {
+//     id: "3",
+//     name: "Aloe Vera Gel",
+//     price: "200 birr",
+//     description: "Soothing aloe vera gel for moisturizing and healing skin.",
+//     image: "https://drorganic.co.uk/shop/images/products/DROALOEGEL_large@2x.jpg?t=5086802349",
+//   },
+// ];
 
-//     if (!result.canceled) {
-//       setSelectedImage(result.assets[0].uri);
-//     }
-//   };
-
+// const ProductsScreen = () => {
+//     const navigation = useNavigation();
 //   return (
 //     <View style={styles.container}>
-//       <Text style={styles.header}>Upload Affected Skin Image</Text>
-
-//       <View style={styles.buttonRow}>
-//         <Button title="Take a Photo" onPress={() => pickImage(true)} />
-//         <Button title="Select from Gallery" onPress={() => pickImage(false)} />
-//       </View>
-
-//       {selectedImage && (
-//         <View style={styles.imageContainer}>
-//           <Image source={{ uri: selectedImage }} style={styles.image} />
-//           <TouchableOpacity onPress={() => setSelectedImage(null)}>
-//             <Text style={styles.removeText}>Remove</Text>
+//       <FlatList
+//         data={products}
+//         keyExtractor={(item) => item.id}
+//         renderItem={({ item }) => (
+//           <TouchableOpacity
+//             onPress={() => navigation.navigate('product-detail', { product: item })}
+//           >
+//             <Card containerStyle={styles.card}>
+//               <Image source={{ uri: item.image }} style={styles.image} />
+//               <Text style={styles.name}>{item.name}</Text>
+//               <Text style={styles.price}>{item.price}</Text>
+//             </Card>
 //           </TouchableOpacity>
-//         </View>
-//       )}
-
-//       <Text style={styles.instructions}>
-//         Ensure the image is clear and well-lit, focusing on the affected skin area.
-//       </Text>
-
-//       <TouchableOpacity style={styles.analyzeButton}>
-//         <Text style={styles.analyzeText}>Analyze Image</Text>
-//       </TouchableOpacity>
+//         )}
+//       />
 //     </View>
 //   );
 // };
 
 // const styles = StyleSheet.create({
-//   container: { flex: 1, padding: 20, alignItems: "center", backgroundColor: "#fff" },
-//   header: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
-//   buttonRow: { flexDirection: "row", justifyContent: "space-between", width: "100%", marginVertical: 10 },
-//   imageContainer: { alignItems: "center", marginVertical: 10 },
-//   image: { width: 100, height: 100, borderRadius: 10 },
-//   removeText: { color: "red", marginTop: 5 },
-//   instructions: { textAlign: "center", marginVertical: 10, color: "#555" },
-//   analyzeButton: { backgroundColor: "#4CAF50", padding: 15, borderRadius: 5, width: "80%", alignItems: "center" },
-//   analyzeText: { color: "#fff", fontWeight: "bold" },
+//   container: { flex: 1, backgroundColor: "#f8f8f8", padding: 10 },
+//   card: { borderRadius: 10, padding: 15, alignItems: "center" },
+//   image: { width: 120, height: 120, borderRadius: 10 },
+//   name: { fontSize: 16, fontWeight: "bold", marginVertical: 5 },
+//   price: { fontSize: 14, color: "#777" },
 // });
 
-// export default SkinImageUploadScreen;
+// export default ProductsScreen;
+

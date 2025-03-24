@@ -1,11 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../Screens/HomeScreen'
 import ProfileScreen from '../Screens/ProfileScreen'
-import ProductsScreen from '../Screens/ProductsScreen'
 import EducationalResourceScreenStackNav from './EducationalResourceScreenStackNav';
 import HomeScreenStackNav from './HomeScreenStackNav'
+import ProductsScreenStackNav from './ProductsScreenStackNav'
 import { Ionicons } from "@expo/vector-icons";
 
 
@@ -28,7 +27,7 @@ export default function TabNavigation() {
                 tabBarIcon: ({ color, size }) => (
                   <Ionicons name="cart-outline" size={size} color={color} />
                 ),
-              }} name="Products" component={ProductsScreen} />
+              }} name="Products" component={ProductsScreenStackNav} />
               <Tab.Screen options={{
                 tabBarIcon: ({ color, size }) => (
                   <Ionicons name="person-outline" size={size} color={color} />
