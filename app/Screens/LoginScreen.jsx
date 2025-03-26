@@ -1,10 +1,32 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import { FIREBASE_AUTH } from "@/FirebaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigation } from "@react-navigation/native";
 
 const LoginScreen = () => {
+  const navigation = useNavigation()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const auth = FIREBASE_AUTH
+
+  const signIn = async () => {
+    setLoading(true)
+    try {
+      const response = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password)
+      console.log(response)
+    }
+    catch (error) {
+      console.log(error)
+      alert('SignIn failed:' + error.message)
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+
 
   return (
     <View style={styles.container}>
@@ -33,16 +55,17 @@ const LoginScreen = () => {
 
       {/* Forgot Password & Create Account */}
       <View style={styles.linkContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+        <TouchableOpacity onPress={() => navigation.navigate("forgot-pass")}>
           <Text style={styles.link}>Forgot Password?</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+        <TouchableOpacity onPress={() => navigation.navigate('expert-signup')}>
           <Text style={styles.link}>Create Account</Text>
         </TouchableOpacity>
       </View>
 
       {/* Login Button */}
-      <TouchableOpacity style={styles.loginButton}>
+      <TouchableOpacity style={styles.loginButton}
+      onPress={signIn}>
         <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
 
