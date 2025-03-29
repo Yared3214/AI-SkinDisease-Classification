@@ -1,47 +1,80 @@
-import React from "react";
-import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from "react-native";
 import { FontAwesome, Feather } from "@expo/vector-icons"; // For icons
 import { useRouter } from "expo-router";
 import { useNavigation } from '@react-navigation/native'
+import { collection, doc, getDocs, increment, updateDoc } from "firebase/firestore";
+import { FIRESTORE_DB } from "@/FirebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EducationalResources = () => {
   const navigation = useNavigation();
-  const router = useRouter();
-  const resources = [
-    {
-      id: "1",
-      title: "Understanding Eczema",
-      type: "Article",
-      author: "Dr. Lisa Tan",
-      likes: 120,
-      comments: 45,
-      views: 300,
-      image: "https://via.placeholder.com/60", // Replace with actual image URL
-    },
-    {
-      id: "2",
-      title: "Acne Treatment Video",
-      type: "Video",
-      author: "Dr. Michael Lee",
-      likes: 230,
-      comments: 75,
-      views: 500,
-      image: "https://via.placeholder.com/60",
-    },
-    {
-      id: "3",
-      title: "Psoriasis Infographic",
-      type: "Infographic",
-      author: "Dr. Sarah Green",
-      likes: 180,
-      comments: 60,
-      views: 400,
-      image: "https://via.placeholder.com/60",
-    },
-  ];
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('resource-detail')}>
+  // Fetch data from Firestore
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(FIRESTORE_DB, "resources"));
+        const resourceList = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setResources(resourceList);
+      } catch (error) {
+        console.error("Error fetching resources:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResources();
+  },);
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#006666" />
+      </View>
+    );
+  }
+
+  const renderItem = ({ item }) => {
+
+    const handlePress = async () => {
+  const resourceRef = doc(FIRESTORE_DB, "resources", item.id);
+
+  try {
+    // await AsyncStorage.removeItem("viewedResources");
+    // Get stored views from AsyncStorage
+    const viewedResources = await AsyncStorage.getItem("viewedResources");
+    let viewedResourcesArray = viewedResources ? JSON.parse(viewedResources) : [];
+
+     if (!Array.isArray(viewedResourcesArray)) {
+      viewedResourcesArray = []; // Fallback in case of unexpected data
+    }
+
+    // Check if the user already viewed this resource
+    if (!viewedResourcesArray.includes(item.id)) {
+      // Update Firestore: Increment view count
+      await updateDoc(resourceRef, {
+        views: increment(1),
+      });
+
+      // Store the viewed resource to prevent counting again
+      viewedResourcesArray.push(item.id);
+      await AsyncStorage.setItem("viewedResources", JSON.stringify(viewedResourcesArray));
+    }
+
+    // Navigate to detail screen (without modifying views manually)
+    navigation.navigate("resource-detail", { resource: item });
+  } catch (error) {
+    console.error("Error updating views:", error);
+  }
+};
+    return (
+    <TouchableOpacity style={styles.card} onPress={handlePress}>
       <View style={styles.cardContent}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{item.title}</Text>
@@ -51,9 +84,9 @@ const EducationalResources = () => {
           {/* Likes, Comments, Views */}
           <View style={styles.stats}>
             <FontAwesome name="heart" size={14} color="gray" />
-            <Text style={styles.statText}>{item.likes}</Text>
+            <Text style={styles.statText}>{item.likes.length}</Text>
             <FontAwesome name="comment" size={14} color="gray" />
-            <Text style={styles.statText}>{item.comments}</Text>
+            <Text style={styles.statText}>{item.commentCount}</Text>
             <FontAwesome name="eye" size={14} color="gray" />
             <Text style={styles.statText}>{item.views}</Text>
           </View>
@@ -64,6 +97,7 @@ const EducationalResources = () => {
       </View>
     </TouchableOpacity>
   );
+}
 
   return (
     <View style={styles.container}>

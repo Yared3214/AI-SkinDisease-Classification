@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import * as DocumentPicker from 'expo-document-picker';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/FirebaseConfig";
 import { useNavigation } from "@react-navigation/native";
@@ -19,12 +19,30 @@ const ExpertSignupScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // const pickDocument = async () => {
+  //   let result = await DocumentPicker.getDocumentAsync({ type: "application/pdf" });
+  //   if (!result.canceled) {
+  //     setDocument(result.uri);
+  //   }
+  // };
   const pickDocument = async () => {
-    let result = await DocumentPicker.getDocumentAsync({ type: "application/pdf" });
-    if (!result.canceled) {
-      setDocument(result.uri);
-    }
-  };
+        try {
+          const result = await DocumentPicker.getDocumentAsync({
+            type: "*/*",  // Allows picking any file type
+          });
+    
+          if (result.canceled) {
+            alert("No file selected.");
+            return;
+          }
+    
+          setDocument(result.assets[0].uri);  // For SDK 49+
+          console.log(result.assets[0]);
+        } catch (error) {
+          console.error("Error picking document:", error);
+          alert("Something went wrong.");
+        }
+      };
 
   const signUpExpert = async () => {
     if (!name || !email || !password || !licenseNumber || !qualifications || !workplace || !document) {
@@ -35,6 +53,8 @@ const ExpertSignupScreen = () => {
     setError(null);
     try {
       const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+      // ✅ Sign out the user after creating the account
+      await signOut(FIREBASE_AUTH);
       const user = userCredential.user;
       
       await setDoc(doc(FIRESTORE_DB, "experts", user.uid), {

@@ -3,6 +3,7 @@ import LoginScreen from '../Screens/LoginScreen';
 import SignupScreen from '../Screens/SignupScreen';
 import ForgotPasswordScreen from '../Screens/ForgotPasswordScreen'
 import ExpertSignupScreen from '../Screens/ExpertSignupScreen'
+import UserTypeSelectionScreen from '../Screens/UserTypeSelectionScreen'
 
 export default function LoginSignupScreenStackNav() {
     const Stack = createStackNavigator();
@@ -21,6 +22,10 @@ export default function LoginSignupScreenStackNav() {
         headerShown: false
       }}/>
       <Stack.Screen name="expert-signup" component={ExpertSignupScreen}
+      options={{
+        headerShown: false
+      }}/>
+      <Stack.Screen name="type-selection" component={UserTypeSelectionScreen}
       options={{
         headerShown: false
       }}/>

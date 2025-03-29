@@ -33,7 +33,10 @@ import LoginSignupScreenStackNav from './Navigation/LoginSignupScreenStackNav'
         flex: 1,
         justifyContent: "center"
       }}>
-        {user ? <TabNavigation /> : <LoginSignupScreenStackNav />}
+        {user ? 
+        <TabNavigation />
+        : 
+        <LoginSignupScreenStackNav />}
       </View>
     );
     // return (
