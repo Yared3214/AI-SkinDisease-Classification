@@ -10,6 +10,9 @@ export default function ProductsScreenStackNav() {
       options={{
         headerShown: false
       }}/>
-      <Stack.Screen name="product-detail" component={ProductDetailsScreen}/>
+      <Stack.Screen name="product-detail" component={ProductDetailsScreen}
+      options={{
+        headerShown: false
+      }}/>
     </Stack.Navigator>
   )}

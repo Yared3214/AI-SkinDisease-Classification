@@ -1,41 +1,43 @@
-import React from "react";
-import { View, FlatList, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { FIRESTORE_DB } from "@/FirebaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import { collection, getDocs } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { View, FlatList, Image, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Card, Icon } from "react-native-elements";
 
-const products = [
-  {
-    id: "1",
-    name: "Hydrating Face Cream",
-    price: "25o birr",
-    description: "A deeply hydrating cream infused with natural extracts.",
-    rating: 4.5,
-    reviews: 120,
-    category: "Moisturizer",
-    image: "https://www.bathandbodyworks.com/dw/image/v2/BBDL_PRD/on/demandware.static/-/Sites-master-catalog/default/dw5adb88f8/hires/028000253.jpg?sh=471",
-  },
-  {
-    id: "2",
-    name: "Vitamin C Serum",
-    price: "300 birr",
-    description: "Brightens skin and reduces dark spots with Vitamin C.",
-    rating: 4.8,
-    reviews: 98,
-    category: "Serum",
-    image: "https://m.media-amazon.com/images/I/51h+qCXUaSL._SL1000_.jpg",
-  },
-  {
-    id: "3",
-    name: "Aloe Vera Gel",
-    price: "200 birr",
-    description: "Soothing aloe vera gel for moisturizing and healing skin.",
-    rating: 4.6,
-    reviews: 150,
-    category: "Natural",
-    image: "https://drorganic.co.uk/shop/images/products/DROALOEGEL_large@2x.jpg?t=5086802349",
-  },
-];
+const SkinCareProductsScreen = () => {
+  const navigation = useNavigation()
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-const SkinCareProductsScreen = ({ navigation }) => {
+  // Fetch Products from Firestore
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(FIRESTORE_DB, "products"));
+        const productList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProducts(productList);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#6BA292" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -70,6 +72,7 @@ const SkinCareProductsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  loader: {flex: 1, justifyContent: "center", alignItems: "center"},
   container: { flex: 1, backgroundColor: "#f8f8f8", padding: 10 },
   card: { borderRadius: 10, padding: 15, alignItems: "center", elevation: 3 },
   image: { width: 120, height: 120, borderRadius: 10 },

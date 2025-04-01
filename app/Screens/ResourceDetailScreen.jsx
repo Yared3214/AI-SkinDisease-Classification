@@ -3,7 +3,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import { addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment, onSnapshot, orderBy, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, FlatList, TextInput, Dimensions } from "react-native";
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, FlatList, TextInput, Dimensions, ActivityIndicator } from "react-native";
 import RenderHtml from "react-native-render-html";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -14,6 +14,7 @@ const ResourceDetailScreen = () => {
   const [likes, setLikes] = useState(resource.likes);
   const [comments, setComments] = useState(resource.comments || []);
   const [newComment, setNewComment] = useState("");
+  const [loading, setLoading] = useState(false)
   const [hasLiked, setHasLiked] = useState(false);
   const resourceRef = doc(FIRESTORE_DB, "resources", resource.id);
   const user_ = FIREBASE_AUTH.currentUser;
@@ -53,25 +54,6 @@ const ResourceDetailScreen = () => {
       console.error("Error updating like status:", error);
     }
   };
-
-  // useEffect(() => {
-  //   const incrementView = async () => {
-  //     try {
-  //       const viewedResources = JSON.parse(await AsyncStorage.getItem("viewedResources")) || {};
-  
-  //       if (!viewedResources[resource.id]) {
-  //         await updateDoc(resourceRef, { views: increment(1) });
-  
-  //         viewedResources[resource.id] = true;
-  //         await AsyncStorage.setItem("viewedResources", JSON.stringify(viewedResources));
-  //       }
-  //     } catch (error) {
-  //       console.error("Error incrementing view count:", error);
-  //     }
-  //   };
-  
-  //   incrementView();
-  // }, [resource.id]);
   
 
   const handleComment = async () => {
@@ -115,6 +97,7 @@ const ResourceDetailScreen = () => {
   };
 
   const fetchComments = async (setComments) => {
+    setLoading(true)
     try {
       const q = query(
         collection(FIRESTORE_DB, "comment"),
@@ -143,6 +126,8 @@ const ResourceDetailScreen = () => {
       setComments(commentsWithUserData);
     } catch (error) {
       console.error("Error fetching comments:", error);
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -170,7 +155,11 @@ const ResourceDetailScreen = () => {
 
       {/* Comments Section */}
       <Text style={styles.commentHeader}>Comments:</Text>
-      <FlatList
+      {loading ? <ActivityIndicator style={styles.loader} />
+      : comments.length === 0 ? (
+          <Text style={styles.noReviews}>No comments yet. Be the first to comment!</Text>
+        ) : (
+          <FlatList
         data={comments}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
@@ -201,6 +190,8 @@ const ResourceDetailScreen = () => {
           
         )}
       />
+        )}
+      
 
       {/* Comment Input */}
       {user_ && (
@@ -223,6 +214,7 @@ const ResourceDetailScreen = () => {
 export default ResourceDetailScreen;
 
 const styles = StyleSheet.create({
+  loader: {flex: 1, justifyContent: "center", alignItems: "center"},
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
   image: { width: "100%", height: 200, borderRadius: 8, marginBottom: 15 },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 5 },

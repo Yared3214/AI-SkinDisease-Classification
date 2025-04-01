@@ -10,7 +10,10 @@ export default function HomeScreenStackNav() {
       options={{
         headerShown: false
       }}/>
-      <Stack.Screen name="analysis-result" component={ResultScreen}/>
+      <Stack.Screen name="analysis-result" component={ResultScreen}
+      options={{
+        headerShown: false
+      }}/>
     </Stack.Navigator>
   )
 }

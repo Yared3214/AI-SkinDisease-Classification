@@ -1,6 +1,8 @@
   import { ActivityIndicator, Text, View } from "react-native";
   import TabNavigation from "./Navigation/TabNavigation";
-import { NavigationContainer } from "@react-navigation/native";
+  import DrawerNavigator from './Navigation/DrawerNavigator'
+import { NavigationContainer, createStaticNavigation,
+  useNavigation,} from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_AUTH } from "@/FirebaseConfig";
@@ -34,7 +36,8 @@ import LoginSignupScreenStackNav from './Navigation/LoginSignupScreenStackNav'
         justifyContent: "center"
       }}>
         {user ? 
-        <TabNavigation />
+        <DrawerNavigator/>
+        // <TabNavigation />
         : 
         <LoginSignupScreenStackNav />}
       </View>

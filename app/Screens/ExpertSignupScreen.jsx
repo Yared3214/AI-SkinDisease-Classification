@@ -58,13 +58,18 @@ const ExpertSignupScreen = () => {
       const user = userCredential.user;
       
       await setDoc(doc(FIRESTORE_DB, "experts", user.uid), {
-        name,
-        email,
         licenseNumber,
         qualifications,
         workplace,
         document, 
-        role: "expert",
+      });
+
+      await setDoc(doc(FIRESTORE_DB, "users", user.uid), {
+        uid: user.uid,
+        name,
+        email, 
+        role: "user",
+        createdAt: new Date(),
       });
 
       alert("Signup Successful! Your profile will be reviewed.");

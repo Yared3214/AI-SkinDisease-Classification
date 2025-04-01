@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Image, Text, TouchableOpacity, Button, StyleSheet, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from '@react-navigation/native'
+import { createStaticNavigation, useNavigation } from '@react-navigation/native'
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
 
 const SkinImageUploadScreen = () => {

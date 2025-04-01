@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { FIREBASE_AUTH } from "@/FirebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -66,7 +66,8 @@ const LoginScreen = () => {
       {/* Login Button */}
       <TouchableOpacity style={styles.loginButton}
       onPress={signIn}>
-        <Text style={styles.loginButtonText}>Login</Text>
+        {loading ? <ActivityIndicator size="small" color="#FFF" />
+      : <Text style={styles.loginButtonText}>Login</Text>}
       </TouchableOpacity>
 
       {/* Social Login */}

@@ -10,7 +10,10 @@ export default function EducationalResourceScreenStackNav() {
       options={{
         headerShown: false
       }}/>
-      <Stack.Screen name="resource-detail" component={ResourceDetailScreen}/>
+      <Stack.Screen name="resource-detail" component={ResourceDetailScreen}
+      options={{
+        headerShown: false,
+      }}/>
     </Stack.Navigator>
   )
 }

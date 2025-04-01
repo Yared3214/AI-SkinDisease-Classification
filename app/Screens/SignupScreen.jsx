@@ -33,6 +33,7 @@ const SignupScreen = () => {
             uid: user.uid,
             name: name,
             email: email,
+            role: 'user',
             createdAt: new Date(),
           });
           console.log('New user', user)
