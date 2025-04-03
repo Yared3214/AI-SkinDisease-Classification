@@ -3,14 +3,29 @@ import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, TextInput, A
 import { FontAwesome, Feather } from "@expo/vector-icons"; // For icons
 import { useRouter } from "expo-router";
 import { useNavigation } from '@react-navigation/native'
-import { collection, doc, getDocs, increment, updateDoc } from "firebase/firestore";
-import { FIRESTORE_DB } from "@/FirebaseConfig";
+import { collection, doc, getDoc, getDocs, increment, updateDoc } from "firebase/firestore";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "@/FirebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EducationalResources = () => {
   const navigation = useNavigation();
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState(null)
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const user = FIREBASE_AUTH.currentUser;
+      if (user) {
+        const userDoc = await getDoc(doc(FIRESTORE_DB, "users", user.uid));
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role);
+        }
+      }
+    };
+    
+    fetchUserRole();
+  },[]);
 
   // Fetch data from Firestore
   useEffect(() => {
@@ -112,6 +127,11 @@ const EducationalResources = () => {
 
       {/* List of Resources */}
       <FlatList data={resources} keyExtractor={(item) => item.id} renderItem={renderItem} />
+      {userRole === "expert" && (
+        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("add-resource")}> 
+          <Text style={styles.addButtonText}>+ Add Post</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -133,6 +153,8 @@ const styles = StyleSheet.create({
   statText: { fontSize: 12, color: "gray", marginLeft: 3, marginRight: 8 },
 
   image: { width: 50, height: 50, borderRadius: 5 },
+  addButton: { position: "absolute", bottom: 20, right: 20, backgroundColor: "#006666", padding: 15, borderRadius: 50, elevation: 3 },
+  addButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" }
 });
 
 export default EducationalResources;
