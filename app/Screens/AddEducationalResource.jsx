@@ -16,7 +16,7 @@ const AddEducationalResource = ({ navigation }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [author, setAuthor] = useState(null)
-  const [type, setType] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [resourceType, setResourceType] = useState("article");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -70,21 +70,31 @@ const AddEducationalResource = ({ navigation }) => {
   }
 
   const handleSubmit = async () => {
-    if (!title || !description || !type || !image) {
-      Alert.alert("Error", "All fields are required!");
-      return;
+    if (resourceType === 'article' || resourceType === 'infographic') {
+      if (!title || !description || !resourceType || !image) {
+        Alert.alert("Error", "All fields are required!");
+        return;
+      }
+    } else {
+      if (!title || !description || !resourceType || !videoUrl) {
+        Alert.alert("Error", "All fields are required!");
+        return;
+      }
     }
     setLoading(true);
     try {
-        const imageUrl = await uploadImageToCloudinary(image);
-        if (!imageUrl) {
-          throw new Error("Image upload failed.");
+        if (resourceType === 'infographic' || resourceType === 'article') {
+          const imageUrl = await uploadImageToCloudinary(image);
+          if (!imageUrl) {
+            throw new Error("Image upload failed.");
+          }
         }
       await addDoc(collection(FIRESTORE_DB, "resources"), {
         title,
         description,
-        type,
-        image: imageUrl,
+        type: resourceType,
+        image,
+        videoUrl: videoUrl,
         author,
         likes: [],
         commentCount: 0,
@@ -121,9 +131,20 @@ const AddEducationalResource = ({ navigation }) => {
       </Picker>
       </View>
 
-      <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-        {image ? <Image source={{ uri: image }} style={styles.imagePreview} /> : <Text>Pick an Image</Text>}
-      </TouchableOpacity>
+      {(resourceType === "infographic" || resourceType === "article") && (
+        <>
+          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+            {image ? <Image source={{ uri: image }} style={styles.imagePreview} /> : <Text>Pick an Image</Text>}
+          </TouchableOpacity>
+        </>
+      )}
+
+      {resourceType === "video" && (
+        <>
+          <Text style={styles.label}>Video URL</Text>
+          <TextInput style={styles.input} value={videoUrl} onChangeText={setVideoUrl} placeholder="Enter YouTube or Video URL" />
+        </>
+      )}
 
       <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Post Resource</Text>}

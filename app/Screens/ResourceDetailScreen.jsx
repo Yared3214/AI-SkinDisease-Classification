@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, FlatList, TextInput, Dimensions, ActivityIndicator } from "react-native";
 import RenderHtml from "react-native-render-html";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import YoutubePlayer from "react-native-youtube-iframe";
 
 
 const ResourceDetailScreen = () => {
@@ -131,9 +132,20 @@ const ResourceDetailScreen = () => {
     }
   };
 
+  const extractYoutubeVideoId = (url) => {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
+    return match ? match[1] : null;
+  };
+
   return (
     <ScrollView style={styles.container}>
-      <Image source={{ uri: resource.image }} style={styles.image} />
+{resource.type === "video" && resource.videoUrl ? (
+        <View style={{ marginBottom: 15 }}>
+          <YoutubePlayer height={200} play={false} videoId={extractYoutubeVideoId(resource.videoUrl)} />
+        </View>
+      ) : (
+        <Image source={{ uri: resource.image }} style={styles.image} />
+      )}
       <Text style={styles.title}>{resource.title}</Text>
       <Text style={styles.type}>{resource.type}</Text>
       <Text style={styles.author}>by {resource.author}</Text>
@@ -214,7 +226,7 @@ const ResourceDetailScreen = () => {
 export default ResourceDetailScreen;
 
 const styles = StyleSheet.create({
-  loader: {flex: 1, justifyContent: "center", alignItems: "center"},
+  loader: {flex: 1, justifyContent: "center", alignItems: "center"  },
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
   image: { width: "100%", height: 200, borderRadius: 8, marginBottom: 15 },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 5 },
