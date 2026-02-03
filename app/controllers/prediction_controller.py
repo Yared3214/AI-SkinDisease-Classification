@@ -2,6 +2,8 @@ from flask import request
 from flask_restful import Resource
 from app.services.model_service import ModelService
 from app.services.file_service import FileService
+from app.services.gemini_service import GeminiService
+from app.services.file_service import FileService
 import traceback
 import os
 
@@ -13,6 +15,7 @@ class PredictResource(Resource):
     def __init__(self):
         self.model_service = ModelService()
         self.file_service = FileService()
+        self.gemini_service = GeminiService()
 
 
     def post(self):
@@ -36,11 +39,27 @@ class PredictResource(Resource):
             # Get prediction from model
             prediction = self.model_service.predict(filepath)
 
-            self.file_service.remove_file(filepath)
+            mime_type = self.file_service.get_mime_type(file.filename)
+
+            # Validate MIME type
+            valid_mime_types = {'image/jpeg', 'image/png', 'image/jpg'}
+            if not mime_type or mime_type not in valid_mime_types:
+                return {'error': 'Invalid file type. Allowed types: png, jpg, jpeg'}, 400
             
+            # Reset file pointer before reading the stream
+            file.seek(0)
+            # Read file stream
+            image_data = file.stream.read()
+            if not image_data:
+                return {'error': 'File is empty or corrupted', 'success': False}, 400
+            
+            response = self.gemini_service.check_skin_disease(image_data, mime_type)
+
+            self.file_service.remove_file(filepath)
             # Combine results
             result = {
                 'success': True,
+                'is_skin_disease': True if response == 'SKIN_RELATED' else False,
                 'image_id': unique_filename,
                 **prediction
             }
@@ -57,13 +76,11 @@ class PredictResource(Resource):
         finally:
             # Clean up temporary file if needed
             if filepath and os.path.exists(filepath) and 'unique_filename' not in locals():
-                # Only delete if prediction failed
                 try:
                     os.remove(filepath)
                     print(f"Cleaned up temporary file: {filepath}")
                 except:
                     pass
-
 class ResultResource(Resource):
     def get(self, image_id):
         """Retrieve prediction result for a specific image"""

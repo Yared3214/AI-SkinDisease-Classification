@@ -19,6 +19,8 @@ class GeminiController(Resource):
             file = request.files['file']
             if not file or file.filename == '':
                 return {'error': 'Empty file provided'}, 400
+            
+            
 
             # Validate file type before saving
             if not self.file_service.allowed_file(file.filename):
